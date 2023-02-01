@@ -1,38 +1,49 @@
 import cv2
 import numpy as np
 
-face_classifier = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
+### 카메라로 얼굴 사진저장(100장)
+# cv2 [Computer Vision] - Opencv: 카메라, 에지 기반 또는 클라우드 기반 컴퓨팅, 소프트웨어 및 인공지능(AI)을 결합하여 시스템이 사물을 "확인"하고 식별할 수 있게 함.
+# OpenCV [Open Source Computer Vision Library]
+# OpenCV는 컴퓨터 비전 관련 프로그래밍을 쉽게 할 수 있도록 도와주는 라이브러리. (이미지 딥러닝에 활용)
+
+# 객체 생성
+face_classifier = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')  # 정면 얼굴 인식
 
 
 def face_extractor(img):
 
-    gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
-    faces = face_classifier.detectMultiScale(gray,1.3,5)
+    gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)     #검출된 사진을 흑백으로 변환
+    faces = face_classifier.detectMultiScale(gray,1.3,5)    # 입력영상에서 얼굴을 검출
 
     if faces is():
         return None
 
+    # 각각의 행마다 (x,y,w,h) 받아와서 사각형을 그리는 코드
     for(x,y,w,h) in faces:
         cropped_face = img[y:y+h, x:x+w]
 
     return cropped_face
 
 
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(0)           # 인수(argument)로 들어간 0은 첫번째 웹캠. (0은 첫번째, 1은 두번째 웹캠 등)
 count = 0
 
 while True:
-    ret, frame = cap.read()
+    ret, frame = cap.read() # 재생되는 비디오의 한 프레임씩 읽음/ 제대로 프레임을 읽으면 ret값이 True, 실패하면 False/ frame에 읽은 프레임이 나옵니다
+    # 얼굴 감지 하여 얼굴만 가져오기
     if face_extractor(frame) is not None:
         count+=1
+        # 얼굴 이미지 크기를 200x200으로 조정
         face = cv2.resize(face_extractor(frame),(200,200))
-        face = cv2.cvtColor(face, cv2.COLOR_BGR2GRAY)
-
+        # 조정된 이미지를 흑백으로 변환
+        face = cv2.cvtColor(face, cv2.COLOR_BGR2GRAY)      # cv2.cvtColor: 프레임을 흑백으로 변환
+        # faces폴더에 jpg파일로 저장
         file_name_path = 'faces/user'+str(count)+'.jpg'
+        # 변환된 이미지나 동영상의 특정 프레임을 저장(저장될 파일명, 저장할 이미지)
         cv2.imwrite(file_name_path,face)
-
-        cv2.putText(face,str(count),(50,50),cv2.FONT_HERSHEY_COMPLEX,1,(0,255,0),2)
-        cv2.imshow('Face Cropper',face)
+        # 화면에 얼굴과 현재 저장 개수 표시(50,50)
+        cv2.putText(face,str(count),(50,50),cv2.FONT_HERSHEY_COMPLEX,1,(0,255,0),2)     # 폰트 종류
+        cv2.imshow('Face Cropper',face) # 이미지를 사이즈에 맞게 보여줌
     else:
         print("Face not Found")
         pass
@@ -40,6 +51,6 @@ while True:
     if cv2.waitKey(1)==13 or count==100:
         break
 
-cap.release()
-cv2.destroyAllWindows()
+cap.release()   # 오픈한 cap 객체를 해제하는 것
+cv2.destroyAllWindows()     # 완성한 모든 윈도우를 제거
 print('Colleting Samples Complete!!!')
